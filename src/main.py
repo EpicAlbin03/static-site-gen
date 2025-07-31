@@ -1,23 +1,18 @@
 import os
 import shutil
-import sys
 from pathlib import Path
 from blocks_md import markdown_to_html_node
 
 
 def main():
     dest_dir = "docs"
-    basepath = "/"
-    if len(sys.argv) > 1:
-        basepath = sys.argv[1]
-        dest_dir += basepath
 
     if os.path.exists("docs"):
         print(f"Clearing destination directory: {"docs"}")
         shutil.rmtree("docs")
 
     copy_files("static", dest_dir)
-    generate_pages_recursive("content", "template.html", dest_dir, basepath)
+    generate_pages_recursive("content", "template.html", dest_dir)
 
 
 def copy_files(src_dir: str, target_dir: str):
@@ -45,7 +40,7 @@ def extract_title(markdown: str) -> str:
     raise ValueError("No h1 header found in markdown")
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str, basepath: str):
+def generate_page(from_path: str, template_path: str, dest_path: str):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path, "r", encoding="utf-8") as f:
@@ -58,8 +53,6 @@ def generate_page(from_path: str, template_path: str, dest_path: str, basepath: 
     title = extract_title(markdown_content)
     full_html = template_content.replace("{{ Title }}", title)
     full_html = full_html.replace("{{ Content }}", html_content)
-    full_html = full_html.replace('href="/', f'href="{basepath}')
-    full_html = full_html.replace('src="/', f'src="{basepath}')
 
     dest_dir = os.path.dirname(dest_path)
     if dest_dir and not os.path.exists(dest_dir):
@@ -70,7 +63,7 @@ def generate_page(from_path: str, template_path: str, dest_path: str, basepath: 
 
 
 def generate_pages_recursive(
-    dir_path_content: str, template_path: str, dest_dir_path: str, basepath: str
+    dir_path_content: str, template_path: str, dest_dir_path: str
 ):
     for entry in os.listdir(dir_path_content):
         entry_path = os.path.join(dir_path_content, entry)
@@ -78,10 +71,10 @@ def generate_pages_recursive(
             if entry_path.endswith(".md"):
                 html_filename = Path(entry).with_suffix(".html").name
                 dest_file_path = os.path.join(dest_dir_path, html_filename)
-                generate_page(entry_path, template_path, dest_file_path, basepath)
+                generate_page(entry_path, template_path, dest_file_path)
         else:
             dest_subdir = os.path.join(dest_dir_path, entry)
-            generate_pages_recursive(entry_path, template_path, dest_subdir, basepath)
+            generate_pages_recursive(entry_path, template_path, dest_subdir)
 
 
 main()
