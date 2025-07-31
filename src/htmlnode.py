@@ -35,10 +35,12 @@ class LeafNode(HTMLNode):
         self.tag = tag
 
     def to_html(self) -> str:
-        if len(self.value) < 1:
-            raise ValueError("missing value")
         if not self.tag:
             return self.value
+        if self.tag == "img":
+            return f"<{self.tag}{self.props_to_html()}>"
+        if len(self.value) < 1:
+            raise ValueError("missing value")
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
     def __repr__(self):
